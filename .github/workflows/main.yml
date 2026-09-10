@@ -1,0 +1,57 @@
+name: CI - Calidad y Seguridad
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-y-calidad:
+    name: Tests + SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+      - name: Ejecutar tests con cobertura
+        run: pytest --cov=. --cov-report=xml
+
+      - name: Análisis de SonarCloud
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build-y-escaneo:
+    name: Build imagen + Escaneo Trivy
+    needs: test-y-calidad
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Construir la imagen Docker
+        run: docker build -t flask-pytest-example:${{ github.sha }} .
+
+      - name: Escanear la imagen con Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'flask-pytest-example:${{ github.sha }}'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true
