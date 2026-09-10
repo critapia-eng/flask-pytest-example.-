@@ -33,11 +33,15 @@ def test_post_route__success():
         }
     }
 
-    response = client.post(url, data=json.dumps(mock_request_data), headers=mock_request_headers)
+    response = client.post(
+        url,
+        data=json.dumps(mock_request_data),
+        headers=mock_request_headers
+    )
     assert response.status_code == 200
 
 
-def test_post_route__failure__unauthorized():
+def test_post_route_failure_unauthorized():
     app = Flask(__name__)
     configure_routes(app)
     client = app.test_client()
@@ -53,11 +57,15 @@ def test_post_route__failure__unauthorized():
         }
     }
 
-    response = client.post(url, data=json.dumps(mock_request_data), headers=mock_request_headers)
+    response = client.post(
+        url,
+        data=json.dumps(mock_request_data),
+        headers=mock_request_headers
+    )
     assert response.status_code == 401
 
 
-def test_post_route__failure__bad_request():
+def test_post_route_failure_bad_request():
     app = Flask(__name__)
     configure_routes(app)
     client = app.test_client()
@@ -69,5 +77,9 @@ def test_post_route__failure__bad_request():
 
     mock_request_data = {}
 
-    response = client.post(url, data=json.dumps(mock_request_data), headers=mock_request_headers)
+    response = client.post(
+        url,
+        data=json.dumps(mock_request_data),
+        headers=mock_request_headers
+    )
     assert response.status_code == 400
